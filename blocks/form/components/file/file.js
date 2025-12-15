@@ -92,30 +92,21 @@ function fileValidation(input, files) {
   let errorMessage = '';
   const wrapper = input.closest('.field-wrapper');
   let invalidFiles = [];
-  invalidFiles = checkAccept(acceptedFile, files);
-  if (invalidFiles.length > 0) {
+  if (checkAccept(acceptedFile, files).length > 0) {
     constraint = 'accept';
-  } else {
-    invalidFiles = checkMaxFileSize(fileSize, files);
-    if (invalidFiles.length > 0) {
-      constraint = 'maxFileSize';
-  }
-  if (multiple && maxItems !== -1 && files.length > maxItems) {
+  } else if (checkMaxFileSize(fileSize, files).length > 0) {
+    constraint = 'maxFileSize';
+  } else if (multiple && maxItems !== -1 && files.length > maxItems) {
     constraint = 'maxItems';
     errorMessage = defaultErrorMessages.maxItems.replace(/\$0/, maxItems);
-  }
-  if (multiple && minItems !== 1 && files.length < minItems) {
+  } else if (multiple && minItems !== 1 && files.length < minItems) {
     constraint = 'minItems';
     errorMessage = defaultErrorMessages.minItems.replace(/\$0/, minItems);
   }
   if (constraint.length) {
-    let invalidFileString = '';
-    if (invalidFiles.length > 0) {
-      invalidFileString = 'File(s) ' + invalidFiles.join(', ') + ' are not supported.';
-    }
-    const finalMessage = (wrapper.dataset[constraint]
+    const finalMessage = wrapper.dataset[constraint]
     || errorMessage
-    || defaultErrorMessages[constraint]);
+    || defaultErrorMessages[constraint];
     input.setCustomValidity(finalMessage);
     updateOrCreateInvalidMsg(
       input,
