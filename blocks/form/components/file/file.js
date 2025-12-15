@@ -117,9 +117,24 @@ function fileValidation(input, files) {
   }
   
   if (constraint.length) {
-    const finalMessage = wrapper.dataset[constraint]
-    || errorMessage
-    || defaultErrorMessages[constraint];
+    let finalMessage;
+    const customMessage = wrapper.dataset[constraint];
+    
+    if (constraint === 'accept' || constraint === 'maxFileSize') {
+      // For file validation errors, always include file names
+      const invalidFilenames = invalidFiles.join(', ');
+      if (customMessage) {
+        // Prepend file names to custom message
+        finalMessage = `${invalidFilenames}: ${customMessage}`;
+      } else {
+        // Use generated message with file names
+        finalMessage = errorMessage;
+      }
+    } else {
+      // For other constraints (maxItems, minItems), use custom or default
+      finalMessage = customMessage || errorMessage || defaultErrorMessages[constraint];
+    }
+    
     input.setCustomValidity(finalMessage);
     updateOrCreateInvalidMsg(
       input,
