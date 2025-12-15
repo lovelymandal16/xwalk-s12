@@ -118,7 +118,7 @@ function fileValidation(input, files) {
   
   if (constraint.length) {
     let finalMessage;
-    const customMessage = wrapper.dataset[constraint];
+    const customMessage = wrapper.dataset[`${constraint}ErrorMessage`];
     
     if (constraint === 'accept' || constraint === 'maxFileSize') {
       // For file validation errors, always include file names
