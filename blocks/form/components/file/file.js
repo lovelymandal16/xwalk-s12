@@ -48,7 +48,9 @@ function matchMediaType(mediaType, accepts) {
  */
 function checkMaxFileSize(maxFileSize, files) {
   const sizeLimit = typeof maxFileSize === 'string' ? getSizeInBytes(maxFileSize) : maxFileSize;
-  return Array.from(files).find((file) => file.size > sizeLimit) === undefined;
+  return Array.from(files)
+    .filter(file => file.size > sizeLimit)
+    .map(file => file.name);
 }
 
 /**
@@ -59,12 +61,21 @@ function checkMaxFileSize(maxFileSize, files) {
  */
 function checkAccept(acceptedMediaTypes, files) {
   if (!acceptedMediaTypes || acceptedMediaTypes.length === 0 || !files.length) {
-    return true;
+    return [];
   }
-  const invalidFile = Array.from(files)
-    .some((file) => !matchMediaType(file.type, acceptedMediaTypes));
-  return !invalidFile;
+  const invalidFiles = Array.from(files)
+    .filter((file) => !matchMediaType(file.type, acceptedMediaTypes))
+    .map((file) => file.name);
+
+  return invalidFiles;
 }
+//   if (!acceptedMediaTypes || acceptedMediaTypes.length === 0 || !files.length) {
+//     return true;
+//   }
+//   const invalidFile = Array.from(files)
+//     .some((file) => !matchMediaType(file.type, acceptedMediaTypes));
+//   return !invalidFile;
+// }
 
 /**
  * triggers file Validation for the given input element and updates the error message
@@ -80,21 +91,31 @@ function fileValidation(input, files) {
   let constraint = '';
   let errorMessage = '';
   const wrapper = input.closest('.field-wrapper');
-  if (!checkAccept(acceptedFile, files)) {
+  let invalidFiles = [];
+  invalidFiles = checkAccept(acceptedFile, files);
+  if (invalidFiles.length > 0) {
     constraint = 'accept';
-  } else if (!checkMaxFileSize(fileSize, files)) {
-    constraint = 'maxFileSize';
-  } else if (multiple && maxItems !== -1 && files.length > maxItems) {
+  } else {
+    invalidFiles = checkMaxFileSize(fileSize, files);
+    if (invalidFiles.length > 0) {
+      constraint = 'maxFileSize';
+  }
+  if (multiple && maxItems !== -1 && files.length > maxItems) {
     constraint = 'maxItems';
     errorMessage = defaultErrorMessages.maxItems.replace(/\$0/, maxItems);
-  } else if (multiple && minItems !== 1 && files.length < minItems) {
+  }
+  if (multiple && minItems !== 1 && files.length < minItems) {
     constraint = 'minItems';
     errorMessage = defaultErrorMessages.minItems.replace(/\$0/, minItems);
   }
   if (constraint.length) {
-    const finalMessage = wrapper.dataset[constraint]
+    let invalidFileString = '';
+    if (invalidFiles.length > 0) {
+      invalidFileString = 'File(s) ' + invalidFiles.join(', ') + ' are not supported.';
+    }
+    const finalMessage = invalidFileString + ' ' + (wrapper.dataset[constraint]
     || errorMessage
-    || defaultErrorMessages[constraint];
+    || defaultErrorMessages[constraint]);
     input.setCustomValidity(finalMessage);
     updateOrCreateInvalidMsg(
       input,
