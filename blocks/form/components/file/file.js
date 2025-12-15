@@ -91,18 +91,31 @@ function fileValidation(input, files) {
   let constraint = '';
   let errorMessage = '';
   const wrapper = input.closest('.field-wrapper');
-  let invalidFiles = [];
-  if (checkAccept(acceptedFile, files).length > 0) {
+  let invalidFiles = checkAccept(acceptedFile, files);
+  if (invalidFiles.length > 0) {
     constraint = 'accept';
-  } else if (checkMaxFileSize(fileSize, files).length > 0) {
-    constraint = 'maxFileSize';
-  } else if (multiple && maxItems !== -1 && files.length > maxItems) {
-    constraint = 'maxItems';
-    errorMessage = defaultErrorMessages.maxItems.replace(/\$0/, maxItems);
-  } else if (multiple && minItems !== 1 && files.length < minItems) {
-    constraint = 'minItems';
-    errorMessage = defaultErrorMessages.minItems.replace(/\$0/, minItems);
+  
+    // Show error for unsupported file types, formatted as instructed (comma separated names in error message)
+    const invalidFilenames = invalidFiles.join(', ');
+    errorMessage = `File(s) ${invalidFilenames} are unsupported file types`;
+  
+  } else{
+    invalidFiles = checkMaxFileSize(fileSize, files);
+    if (invalidFiles.length > 0) {
+      constraint = 'maxFileSize';
+      const invalidFilenames = invalidFiles.join(', ');
+      errorMessage = `File(s) ${invalidFilenames} are greater than the expected size ${fileSize} MB`;
+    }
+    else if (multiple && maxItems !== -1 && files.length > maxItems) {
+      constraint = 'maxItems';
+      errorMessage = defaultErrorMessages.maxItems.replace(/\$0/, maxItems);
+    }
+    else if (multiple && minItems !== 1 && files.length < minItems) {
+      constraint = 'minItems';
+      errorMessage = defaultErrorMessages.minItems.replace(/\$0/, minItems);
+    }
   }
+  
   if (constraint.length) {
     const finalMessage = wrapper.dataset[constraint]
     || errorMessage
