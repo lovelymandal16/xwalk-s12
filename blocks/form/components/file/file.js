@@ -113,7 +113,7 @@ function fileValidation(input, files) {
     if (invalidFiles.length > 0) {
       invalidFileString = 'File(s) ' + invalidFiles.join(', ') + ' are not supported.';
     }
-    const finalMessage = invalidFileString + ' ' + (wrapper.dataset[constraint]
+    const finalMessage = (wrapper.dataset[constraint]
     || errorMessage
     || defaultErrorMessages[constraint]);
     input.setCustomValidity(finalMessage);
