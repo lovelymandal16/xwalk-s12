@@ -104,7 +104,7 @@ function fileValidation(input, files) {
     if (invalidFiles.length > 0) {
       constraint = 'maxFileSize';
       const invalidFilenames = invalidFiles.join(', ');
-      errorMessage = `File(s) ${invalidFilenames} are greater than the expected size ${fileSize} MB`;
+      errorMessage = `File(s) ${invalidFilenames} are greater than the expected size ${fileSize}`;
     }
     else if (multiple && maxItems !== -1 && files.length > maxItems) {
       constraint = 'maxItems';
